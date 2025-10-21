@@ -1,60 +1,22 @@
 {
-  "name": "3d-force-graph",
-  "version": "1.39.0",
-  "description": "UI component for a 3D force-directed graph using ThreeJS and d3-force-3d layout engine",
-  "unpkg": "dist/3d-force-graph.min.js",
-  "main": "dist/3d-force-graph.common.js",
-  "module": "dist/3d-force-graph.module.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vasturiano/3d-force-graph.git"
-  },
-  "homepage": "https://github.com/vasturiano/3d-force-graph",
-  "keywords": [
-    "3d",
-    "force",
-    "graph",
-    "three",
-    "ngraph",
-    "webgl"
-  ],
-  "author": {
-    "name": "Vasco Asturiano",
-    "url": "http://bl.ocks.org/vasturiano"
-  },
-  "bugs": {
-    "url": "https://github.com/vasturiano/3d-force-graph/issues"
-  },
+  "name": "react-profile-page",
+  "version": "1.0.0",
+  "description": "A modern profile page design using React",
+  "main": "index.js",
   "scripts": {
-    "build": "rimraf dist && rollup -c",
-    "watch": "rollup -c -w",
-    "minify": "uglifyjs dist/3d-force-graph.js -o dist/3d-force-graph.min.js -c -m --comments '/Version/'",
-    "build-module": "rollup -c rollup.config.module.js",
-    "prepublish": "npm run build && npm run minify && npm run build-module"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
+  "keywords": ["react", "profile", "page", "design"],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
-    "accessor-fn": "^1.2.2",
-    "kapsule": "^1.9.1",
-    "three": "^0.94.0",
-    "three-dragcontrols": "^0.88.2",
-    "three-forcegraph": "^1.15.1",
-    "three-render-objects": "^1.0.6"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "postcss-nested": "^3.0.0",
-    "postcss-simple-vars": "^4.1.0",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.63.4",
-    "rollup-plugin-babel": "^3.0.7",
-    "rollup-plugin-commonjs": "^9.1.4",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-postcss": "^1.6.2",
-    "rollup-watch": "^4.3.1",
-    "uglify-js": "^3.4.6"
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0"
   }
 }
