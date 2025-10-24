@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Button Component Example</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .button-group {
+      margin-bottom: 30px;
+    }
+
+    .button-group h2 {
+      color: #444;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .output {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      border-left: 4px solid #0070f3;
+    }
+
+    .output h3 {
+      margin-top: 0;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .output-content {
+      color: #666;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+  </style>
+  <link rel="stylesheet" href="../../src/button.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Button Component Example</h1>
+    <p>A reusable button component built with Kapsule for the 3D Force Graph library.</p>
+
+    <div class="button-group">
+      <h2>Basic Buttons</h2>
+      <div class="button-container">
+        <div id="button1"></div>
+        <div id="button2"></div>
+        <div id="button3"></div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <h2>Disabled Button</h2>
+      <div class="button-container">
+        <div id="button4"></div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <h2>Custom Styled Button</h2>
+      <div class="button-container">
+        <div id="button5"></div>
+      </div>
+    </div>
+
+    <div class="output">
+      <h3>Click Output:</h3>
+      <div class="output-content" id="output">Click any button to see the output here...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import Button from '../../src/button.js';
+
+    const output = document.getElementById('output');
+    let clickCount = 0;
+
+    function logClick(buttonName) {
+      clickCount++;
+      output.textContent = `[${new Date().toLocaleTimeString()}] ${buttonName} clicked! (Total clicks: ${clickCount})`;
+    }
+
+    // Basic button 1
+    Button()
+      (document.getElementById('button1'))
+      .label('Click Me')
+      .onClick(() => logClick('Button 1'));
+
+    // Basic button 2
+    Button()
+      (document.getElementById('button2'))
+      .label('Primary Action')
+      .onClick(() => logClick('Button 2'));
+
+    // Basic button 3
+    Button()
+      (document.getElementById('button3'))
+      .label('Submit')
+      .onClick(() => logClick('Button 3'));
+
+    // Disabled button
+    Button()
+      (document.getElementById('button4'))
+      .label('Disabled Button')
+      .disabled(true)
+      .onClick(() => logClick('Button 4 (should not fire)'));
+
+    // Custom styled button
+    Button()
+      (document.getElementById('button5'))
+      .label('Custom Style')
+      .style({
+        backgroundColor: '#10b981',
+        padding: '12px 24px',
+        fontSize: '16px',
+        borderRadius: '8px'
+      })
+      .onClick(() => logClick('Custom Styled Button'));
+  </script>
+</body>
+</html>
