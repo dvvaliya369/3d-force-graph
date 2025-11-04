@@ -1,2 +1,1 @@
 KV_2_URL="https://blackbox.ai"
-TEST_KEY="blackbox"
