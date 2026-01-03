@@ -30,6 +30,14 @@ See also the [VR version](https://github.com/vasturiano/3d-force-graph-vr) and t
 
 And check out the [React bindings](https://github.com/vasturiano/react-force-graph).
 
+## Onboarding
+
+1. **Install dependencies**: `npm install` from the repository root.
+2. **Run the dev build**: `npm run watch` monitors `src/` and rebuilds the bundle.
+3. **Build for production**: `npm run build && npm run minify && npm run build-module` emits the distributable artifacts under `dist/`.
+4. **Explore examples**: serve any `example/*/index.html` locally (e.g. `npx serve example/basic`).
+5. **Publish checklist**: run all build steps, update docs/changelog, then `npm publish`.
+
 ## Quick start
 
 ```
