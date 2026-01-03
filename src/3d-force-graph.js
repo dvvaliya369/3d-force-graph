@@ -104,6 +104,9 @@ export default Kapsule({
     onNodeHover: { default: () => {}, triggerUpdate: false },
     onLinkClick: { default: () => {}, triggerUpdate: false },
     onLinkHover: { default: () => {}, triggerUpdate: false },
+    enableOnboarding: { default: false, triggerUpdate: false },
+    onboardingStorageKey: { default: '3d-force-graph-onboarding-completed', triggerUpdate: false },
+    onOnboardingComplete: { default: () => {}, triggerUpdate: false },
     ...linkedFGProps,
     ...linkedRenderObjsProps
   },
@@ -163,6 +166,87 @@ export default Kapsule({
     state.container.appendChild(infoElem = document.createElement('div'));
     infoElem.className = 'graph-info-msg';
     infoElem.textContent = '';
+
+    // Add onboarding overlay if enabled
+    if (state.enableOnboarding) {
+      const shouldShowOnboarding = () => {
+        try {
+          return !localStorage.getItem(state.onboardingStorageKey);
+        } catch (e) {
+          return true; // Show onboarding if localStorage is not available
+        }
+      };
+
+      if (shouldShowOnboarding()) {
+        const onboardingOverlay = document.createElement('div');
+        onboardingOverlay.className = 'graph-onboarding-overlay';
+        onboardingOverlay.innerHTML = `
+          <div class="graph-onboarding-content">
+            <div class="graph-onboarding-title">Welcome to 3D Force Graph!</div>
+            <div class="graph-onboarding-steps">
+              <div class="graph-onboarding-step">
+                <div class="graph-onboarding-step-icon">🔄</div>
+                <div class="graph-onboarding-step-content">
+                  <div class="graph-onboarding-step-title">Rotate View</div>
+                  <div class="graph-onboarding-step-description">Click and drag to rotate the graph in 3D space</div>
+                </div>
+              </div>
+              <div class="graph-onboarding-step">
+                <div class="graph-onboarding-step-icon">🔍</div>
+                <div class="graph-onboarding-step-content">
+                  <div class="graph-onboarding-step-title">Zoom</div>
+                  <div class="graph-onboarding-step-description">Use scroll wheel to zoom in and out</div>
+                </div>
+              </div>
+              <div class="graph-onboarding-step">
+                <div class="graph-onboarding-step-icon">✋</div>
+                <div class="graph-onboarding-step-content">
+                  <div class="graph-onboarding-step-title">Pan View</div>
+                  <div class="graph-onboarding-step-description">Right-click and drag to pan across the scene</div>
+                </div>
+              </div>
+              <div class="graph-onboarding-step">
+                <div class="graph-onboarding-step-icon">👆</div>
+                <div class="graph-onboarding-step-content">
+                  <div class="graph-onboarding-step-title">Interact with Nodes</div>
+                  <div class="graph-onboarding-step-description">Hover over nodes for details, click to select, drag to reposition</div>
+                </div>
+              </div>
+            </div>
+            <div class="graph-onboarding-checkbox-container">
+              <input type="checkbox" id="graph-onboarding-dont-show" class="graph-onboarding-checkbox">
+              <label for="graph-onboarding-dont-show">Don't show this again</label>
+            </div>
+            <div class="graph-onboarding-buttons">
+              <button class="graph-onboarding-button graph-onboarding-button-primary">Get Started</button>
+            </div>
+          </div>
+        `;
+
+        state.container.appendChild(onboardingOverlay);
+
+        const closeOnboarding = () => {
+          const dontShowCheckbox = onboardingOverlay.querySelector('#graph-onboarding-dont-show');
+          if (dontShowCheckbox && dontShowCheckbox.checked) {
+            try {
+              localStorage.setItem(state.onboardingStorageKey, 'true');
+            } catch (e) {
+              // Ignore localStorage errors
+            }
+          }
+          onboardingOverlay.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => {
+            if (onboardingOverlay.parentNode) {
+              onboardingOverlay.parentNode.removeChild(onboardingOverlay);
+            }
+            state.onOnboardingComplete();
+          }, 300);
+        };
+
+        const startButton = onboardingOverlay.querySelector('.graph-onboarding-button-primary');
+        startButton.addEventListener('click', closeOnboarding);
+      }
+    }
 
     // config forcegraph
     state.forceGraph.onLoading(() => { infoElem.textContent = 'Loading...' });

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>3D Force Graph - Onboarding Test</title>
+  <style>
+    body { 
+      margin: 0; 
+      font-family: Sans-serif;
+    }
+    .controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2000;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .controls button {
+      margin: 5px;
+      padding: 8px 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      background: #2196F3;
+      color: white;
+      font-weight: bold;
+    }
+    .controls button:hover {
+      background: #1976D2;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h3 style="margin: 0 0 10px 0;">Onboarding Test Controls</h3>
+    <button onclick="resetOnboarding()">Reset Onboarding</button>
+    <button onclick="reloadPage()">Reload Page</button>
+    <div class="status" id="status">
+      Status: Ready
+    </div>
+  </div>
+  
+  <div id="3d-graph"></div>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+  
+  <script>
+    function updateStatus(msg) {
+      document.getElementById('status').textContent = 'Status: ' + msg;
+    }
+    
+    function resetOnboarding() {
+      localStorage.removeItem('3d-force-graph-onboarding-completed');
+      updateStatus('Onboarding reset! Reload to see it again.');
+    }
+    
+    function reloadPage() {
+      location.reload();
+    }
+    
+    // Check current state
+    const hasSeenOnboarding = localStorage.getItem('3d-force-graph-onboarding-completed');
+    updateStatus(hasSeenOnboarding ? 'Onboarding completed previously' : 'First time - onboarding will show');
+    
+    // Random tree data
+    const N = 300;
+    const gData = {
+      nodes: [...Array(N).keys()].map(i => ({ 
+        id: i,
+        name: `Node ${i}`,
+        val: Math.random() * 10 + 1
+      })),
+      links: [...Array(N).keys()]
+        .filter(id => id)
+        .map(id => ({
+          source: id,
+          target: Math.round(Math.random() * (id-1))
+        }))
+    };
+
+    // Initialize graph with onboarding enabled
+    const Graph = ForceGraph3D()
+      (document.getElementById('3d-graph'))
+        .graphData(gData)
+        .enableOnboarding(true)
+        .onOnboardingComplete(() => {
+          console.log('✅ Onboarding completed!');
+          updateStatus('Onboarding completed!');
+        })
+        .nodeLabel('name')
+        .nodeAutoColorBy('id')
+        .linkDirectionalParticles(2)
+        .linkDirectionalParticleSpeed(0.005);
+    
+    console.log('🚀 Graph initialized with onboarding enabled');
+  </script>
+</body>
+</html>
