@@ -50,6 +50,15 @@ myGraph(<myDOMElement>)
     .graphData(<myData>);
 ```
 
+## Onboarding
+
+- `npm install`
+- `npm run build`
+- `npm run watch`
+- `npm run minify`
+- `npm run build-module`
+- `npm run prepublish`
+
 ## API reference
 
 ### Data input
