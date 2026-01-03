@@ -104,6 +104,11 @@ export default Kapsule({
     onNodeHover: { default: () => {}, triggerUpdate: false },
     onLinkClick: { default: () => {}, triggerUpdate: false },
     onLinkHover: { default: () => {}, triggerUpdate: false },
+    onboardingEnabled: { default: false, triggerUpdate: false },
+    onboardingSteps: { default: [], triggerUpdate: false },
+    onboardingCurrentStep: { default: 0, triggerUpdate: false },
+    onOnboardingStepChange: { default: () => {}, triggerUpdate: false },
+    onOnboardingComplete: { default: () => {}, triggerUpdate: false },
     ...linkedFGProps,
     ...linkedRenderObjsProps
   },
@@ -124,6 +129,42 @@ export default Kapsule({
     stopAnimation: function(state) {
       if (state.animationFrameRequestId) {
         cancelAnimationFrame(state.animationFrameRequestId);
+      }
+      return this;
+    },
+    nextOnboardingStep: function(state) {
+      if (state.onboardingEnabled && state.onboardingSteps.length > 0) {
+        const nextStep = state.onboardingCurrentStep + 1;
+        if (nextStep < state.onboardingSteps.length) {
+          this.onboardingCurrentStep(nextStep);
+          state.onOnboardingStepChange(state.onboardingSteps[nextStep], nextStep);
+        } else {
+          this.onboardingEnabled(false);
+          state.onOnboardingComplete();
+          if (state.onboardingOverlay) {
+            state.onboardingOverlay.remove();
+            state.onboardingOverlay = null;
+          }
+        }
+      }
+      return this;
+    },
+    prevOnboardingStep: function(state) {
+      if (state.onboardingEnabled && state.onboardingCurrentStep > 0) {
+        const prevStep = state.onboardingCurrentStep - 1;
+        this.onboardingCurrentStep(prevStep);
+        state.onOnboardingStepChange(state.onboardingSteps[prevStep], prevStep);
+      }
+      return this;
+    },
+    skipOnboarding: function(state) {
+      if (state.onboardingEnabled) {
+        this.onboardingEnabled(false);
+        state.onOnboardingComplete();
+        if (state.onboardingOverlay) {
+          state.onboardingOverlay.remove();
+          state.onboardingOverlay = null;
+        }
       }
       return this;
     },
@@ -163,6 +204,158 @@ export default Kapsule({
     state.container.appendChild(infoElem = document.createElement('div'));
     infoElem.className = 'graph-info-msg';
     infoElem.textContent = '';
+
+    // Add onboarding overlay
+    const createOnboardingOverlay = () => {
+      if (state.onboardingOverlay) {
+        state.onboardingOverlay.remove();
+      }
+
+      const overlay = document.createElement('div');
+      overlay.className = 'onboarding-overlay';
+
+      const modal = document.createElement('div');
+      modal.className = 'onboarding-modal';
+
+      const header = document.createElement('div');
+      header.className = 'onboarding-header';
+
+      const title = document.createElement('h3');
+      title.className = 'onboarding-title';
+
+      const stepIndicator = document.createElement('span');
+      stepIndicator.className = 'onboarding-step-indicator';
+
+      header.appendChild(title);
+      header.appendChild(stepIndicator);
+
+      const content = document.createElement('div');
+      content.className = 'onboarding-content';
+
+      const actions = document.createElement('div');
+      actions.className = 'onboarding-actions';
+
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'onboarding-btn onboarding-btn-secondary';
+      prevBtn.textContent = 'Previous';
+      prevBtn.onclick = () => this.prevOnboardingStep();
+
+      const skipBtn = document.createElement('button');
+      skipBtn.className = 'onboarding-btn onboarding-btn-secondary';
+      skipBtn.textContent = 'Skip';
+      skipBtn.onclick = () => this.skipOnboarding();
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'onboarding-btn onboarding-btn-primary';
+      nextBtn.textContent = 'Next';
+      nextBtn.onclick = () => this.nextOnboardingStep();
+
+      actions.appendChild(prevBtn);
+      actions.appendChild(skipBtn);
+      actions.appendChild(nextBtn);
+
+      modal.appendChild(header);
+      modal.appendChild(content);
+      modal.appendChild(actions);
+      overlay.appendChild(modal);
+
+      state.container.appendChild(overlay);
+      state.onboardingOverlay = overlay;
+      state.onboardingModal = modal;
+      state.onboardingTitle = title;
+      state.onboardingStepIndicator = stepIndicator;
+      state.onboardingContent = content;
+      state.onboardingPrevBtn = prevBtn;
+      state.onboardingNextBtn = nextBtn;
+
+      return overlay;
+    };
+
+    const updateOnboardingUI = () => {
+      if (!state.onboardingEnabled || !state.onboardingSteps.length) {
+        if (state.onboardingOverlay) {
+          state.onboardingOverlay.remove();
+          state.onboardingOverlay = null;
+        }
+        return;
+      }
+
+      if (!state.onboardingOverlay) {
+        createOnboardingOverlay();
+      }
+
+      const currentStep = state.onboardingSteps[state.onboardingCurrentStep];
+      if (!currentStep) return;
+
+      state.onboardingTitle.textContent = currentStep.title || 'Tutorial';
+      state.onboardingContent.innerHTML = currentStep.content || '';
+      state.onboardingStepIndicator.textContent = `${state.onboardingCurrentStep + 1} / ${state.onboardingSteps.length}`;
+
+      // Update button states
+      state.onboardingPrevBtn.disabled = state.onboardingCurrentStep === 0;
+      state.onboardingPrevBtn.style.opacity = state.onboardingCurrentStep === 0 ? '0.5' : '1';
+
+      const isLastStep = state.onboardingCurrentStep === state.onboardingSteps.length - 1;
+      state.onboardingNextBtn.textContent = isLastStep ? 'Finish' : 'Next';
+
+      // Position highlight if specified
+      if (currentStep.highlightSelector && state.onboardingOverlay) {
+        const targetElement = document.querySelector(currentStep.highlightSelector);
+        if (targetElement) {
+          const rect = targetElement.getBoundingClientRect();
+          const containerRect = state.container.getBoundingClientRect();
+
+          // Create or update highlight
+          let highlight = state.container.querySelector('.onboarding-highlight');
+          if (!highlight) {
+            highlight = document.createElement('div');
+            highlight.className = 'onboarding-highlight';
+            state.container.appendChild(highlight);
+          }
+
+          highlight.style.left = `${rect.left - containerRect.left}px`;
+          highlight.style.top = `${rect.top - containerRect.top}px`;
+          highlight.style.width = `${rect.width}px`;
+          highlight.style.height = `${rect.height}px`;
+        }
+      } else {
+        const highlight = state.container.querySelector('.onboarding-highlight');
+        if (highlight) {
+          highlight.remove();
+        }
+      }
+    };
+
+    // Watch for onboarding changes
+    const originalOnboardingEnabled = state.onboardingEnabled;
+    Object.defineProperty(state, '_onboardingEnabled', { value: originalOnboardingEnabled, writable: true });
+    delete state.onboardingEnabled;
+    Object.defineProperty(state, 'onboardingEnabled', {
+      get() { return this._onboardingEnabled; },
+      set(val) {
+        this._onboardingEnabled = val;
+        updateOnboardingUI();
+      }
+    });
+
+    const originalOnboardingCurrentStep = state.onboardingCurrentStep;
+    Object.defineProperty(state, '_onboardingCurrentStep', { value: originalOnboardingCurrentStep, writable: true });
+    delete state.onboardingCurrentStep;
+    Object.defineProperty(state, 'onboardingCurrentStep', {
+      get() { return this._onboardingCurrentStep; },
+      set(val) {
+        this._onboardingCurrentStep = val;
+        updateOnboardingUI();
+      }
+    });
+
+    // Initialize onboarding if enabled
+    if (state.onboardingEnabled && state.onboardingSteps.length > 0) {
+      setTimeout(() => {
+        updateOnboardingUI();
+        state.onOnboardingStepChange(state.onboardingSteps[0], 0);
+      }, 100);
+    }
 
     // config forcegraph
     state.forceGraph.onLoading(() => { infoElem.textContent = 'Loading...' });
