@@ -104,6 +104,8 @@ export default Kapsule({
     onNodeHover: { default: () => {}, triggerUpdate: false },
     onLinkClick: { default: () => {}, triggerUpdate: false },
     onLinkHover: { default: () => {}, triggerUpdate: false },
+    showOnboarding: { default: true, triggerUpdate: false },
+    onboardingKey: { default: '3d-force-graph-onboarding-seen', triggerUpdate: false },
     ...linkedFGProps,
     ...linkedRenderObjsProps
   },

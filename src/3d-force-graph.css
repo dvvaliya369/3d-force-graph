@@ -39,3 +39,179 @@
   cursor: -moz-grabbing;
   cursor: -webkit-grabbing;
 }
+
+.graph-onboarding-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Sans-serif;
+  color: #fff;
+}
+
+.graph-onboarding-content {
+  max-width: 600px;
+  padding: 40px;
+  background: rgba(30, 30, 50, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.graph-onboarding-title {
+  font-size: 32px;
+  margin: 0 0 20px 0;
+  color: #87CEEB;
+  font-weight: 600;
+}
+
+.graph-onboarding-description {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 30px 0;
+  color: #E6E6FA;
+}
+
+.graph-onboarding-steps {
+  text-align: left;
+  margin: 30px 0;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.graph-onboarding-step {
+  margin: 15px 0;
+  padding: 12px;
+  border-left: 3px solid #87CEEB;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.graph-onboarding-step-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #87CEEB;
+}
+
+.graph-onboarding-step-description {
+  font-size: 14px;
+  margin: 0;
+  color: #E6E6FA;
+  line-height: 1.5;
+}
+
+.graph-onboarding-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.graph-onboarding-button {
+  padding: 12px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: Sans-serif;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.graph-onboarding-button-primary {
+  background: #87CEEB;
+  color: #1e1e32;
+}
+
+.graph-onboarding-button-primary:hover {
+  background: #6fb8d4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(135, 206, 235, 0.4);
+}
+
+.graph-onboarding-button-secondary {
+  background: transparent;
+  color: #E6E6FA;
+  border: 2px solid #E6E6FA;
+}
+
+.graph-onboarding-button-secondary:hover {
+  background: rgba(230, 230, 250, 0.1);
+  border-color: #87CEEB;
+  color: #87CEEB;
+}
+
+.graph-onboarding-highlight {
+  position: absolute;
+  border: 3px solid #87CEEB;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 999;
+  box-shadow: 0 0 20px rgba(135, 206, 235, 0.6);
+  animation: pulse-highlight 2s infinite;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(135, 206, 235, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(135, 206, 235, 0.9);
+  }
+}
+
+.graph-onboarding-tooltip {
+  position: absolute;
+  background: rgba(30, 30, 50, 0.95);
+  color: #E6E6FA;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 1001;
+  max-width: 300px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  border: 2px solid #87CEEB;
+}
+
+.graph-onboarding-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.graph-onboarding-tooltip-arrow-bottom {
+  bottom: -10px;
+  left: 50%;
+  margin-left: -10px;
+  border-width: 10px 10px 0 10px;
+  border-color: #87CEEB transparent transparent transparent;
+}
+
+.graph-onboarding-skip {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  color: #E6E6FA;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-family: Sans-serif;
+  transition: all 0.2s ease;
+}
+
+.graph-onboarding-skip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #87CEEB;
+}
