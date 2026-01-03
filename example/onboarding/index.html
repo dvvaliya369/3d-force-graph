@@ -1,0 +1,44 @@
+<head>
+  <style> body { margin: 0; } </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+  <!--<script src="../../dist/3d-force-graph.js"></script>-->
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+
+  <script>
+    // Random tree
+    const N = 300;
+    const gData = {
+      nodes: [...Array(N).keys()].map(i => ({ id: i })),
+      links: [...Array(N).keys()]
+        .filter(id => id)
+        .map(id => ({
+          source: id,
+          target: Math.round(Math.random() * (id-1))
+        }))
+    };
+
+    const Graph = ForceGraph3D({
+      enableOnboarding: true  // Enable onboarding feature
+    })
+      (document.getElementById('3d-graph'))
+        .graphData(gData)
+        .nodeAutoColorBy('id')
+        .nodeLabel(node => `Node ${node.id}`)
+        .onNodeClick(node => {
+          console.log('Clicked node:', node);
+        })
+        .onNodeHover(node => {
+          document.getElementById('3d-graph').style.cursor = node ? 'pointer' : null;
+        });
+
+    // You can also manually trigger onboarding
+    // Graph.startOnboarding();
+    
+    // Or skip it programmatically
+    // Graph.skipOnboarding();
+  </script>
+</body>

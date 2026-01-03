@@ -19,6 +19,159 @@ const CAMERA_DISTANCE2NODES_FACTOR = 150;
 
 //
 
+// Onboarding helper functions
+const onboardingSteps = [
+  {
+    title: 'Welcome to 3D Force Graph! 🎉',
+    content: `
+      <p>This interactive tutorial will guide you through the key features of navigating and interacting with your 3D graph.</p>
+      <p>Let's get started!</p>
+    `
+  },
+  {
+    title: 'Camera Navigation 🎥',
+    content: `
+      <p>Control the camera view with your mouse:</p>
+      <ul>
+        <li><strong>Left-click + Drag:</strong> Rotate the view</li>
+        <li><strong>Right-click + Drag:</strong> Pan the view</li>
+        <li><strong>Scroll:</strong> Zoom in and out</li>
+      </ul>
+      <p>Try moving around the graph now!</p>
+    `
+  },
+  {
+    title: 'Node Interactions 🔵',
+    content: `
+      <p>Interact with nodes in the graph:</p>
+      <ul>
+        <li><strong>Hover:</strong> See node information</li>
+        <li><strong>Click:</strong> Trigger custom actions</li>
+        <li><strong>Drag:</strong> Move nodes around (if enabled)</li>
+      </ul>
+      <p>Nodes are the building blocks of your graph!</p>
+    `
+  },
+  {
+    title: 'You\'re All Set! ✨',
+    content: `
+      <p>You now know the basics of navigating and interacting with your 3D force graph.</p>
+      <p>Explore your data and discover insights!</p>
+    `
+  }
+];
+
+function createOnboardingHTML(state) {
+  const backdrop = document.createElement('div');
+  backdrop.className = 'graph-onboarding-backdrop';
+  backdrop.style.display = 'none';
+  
+  const container = document.createElement('div');
+  container.className = 'graph-onboarding-container';
+  container.style.display = 'none';
+  
+  container.innerHTML = `
+    <div class="graph-onboarding-header"></div>
+    <div class="graph-onboarding-content"></div>
+    <div class="graph-onboarding-footer">
+      <div class="graph-onboarding-steps"></div>
+      <div class="graph-onboarding-buttons">
+        <button class="graph-onboarding-button graph-onboarding-button-skip">Skip</button>
+        <button class="graph-onboarding-button graph-onboarding-button-prev" style="display: none;">Previous</button>
+        <button class="graph-onboarding-button graph-onboarding-button-next">Next</button>
+        <button class="graph-onboarding-button graph-onboarding-button-finish" style="display: none;">Finish</button>
+      </div>
+    </div>
+  `;
+  
+  state.container.appendChild(backdrop);
+  state.container.appendChild(container);
+  
+  state.onboardingBackdrop = backdrop;
+  state.onboardingContainer = container;
+  state.onboardingCurrentStep = 0;
+  
+  // Create step dots
+  const stepsContainer = container.querySelector('.graph-onboarding-steps');
+  onboardingSteps.forEach((_, index) => {
+    const dot = document.createElement('div');
+    dot.className = 'graph-onboarding-step-dot';
+    if (index === 0) dot.classList.add('active');
+    stepsContainer.appendChild(dot);
+  });
+  
+  // Add event listeners
+  const skipBtn = container.querySelector('.graph-onboarding-button-skip');
+  const prevBtn = container.querySelector('.graph-onboarding-button-prev');
+  const nextBtn = container.querySelector('.graph-onboarding-button-next');
+  const finishBtn = container.querySelector('.graph-onboarding-button-finish');
+  
+  skipBtn.addEventListener('click', () => hideOnboarding(state));
+  prevBtn.addEventListener('click', () => {
+    if (state.onboardingCurrentStep > 0) {
+      state.onboardingCurrentStep--;
+      updateOnboardingStep(state);
+    }
+  });
+  nextBtn.addEventListener('click', () => {
+    if (state.onboardingCurrentStep < onboardingSteps.length - 1) {
+      state.onboardingCurrentStep++;
+      updateOnboardingStep(state);
+    }
+  });
+  finishBtn.addEventListener('click', () => hideOnboarding(state));
+}
+
+function updateOnboardingStep(state) {
+  const container = state.onboardingContainer;
+  const step = onboardingSteps[state.onboardingCurrentStep];
+  
+  container.querySelector('.graph-onboarding-header').textContent = step.title;
+  container.querySelector('.graph-onboarding-content').innerHTML = step.content;
+  
+  // Update step dots
+  const dots = container.querySelectorAll('.graph-onboarding-step-dot');
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index === state.onboardingCurrentStep);
+  });
+  
+  // Update buttons
+  const prevBtn = container.querySelector('.graph-onboarding-button-prev');
+  const nextBtn = container.querySelector('.graph-onboarding-button-next');
+  const finishBtn = container.querySelector('.graph-onboarding-button-finish');
+  
+  prevBtn.style.display = state.onboardingCurrentStep > 0 ? 'block' : 'none';
+  nextBtn.style.display = state.onboardingCurrentStep < onboardingSteps.length - 1 ? 'block' : 'none';
+  finishBtn.style.display = state.onboardingCurrentStep === onboardingSteps.length - 1 ? 'block' : 'none';
+}
+
+function hideOnboarding(state) {
+  if (state.onboardingContainer) {
+    state.onboardingContainer.style.display = 'none';
+    state.onboardingBackdrop.style.display = 'none';
+    
+    // Save to localStorage
+    try {
+      localStorage.setItem(state.onboardingLocalStorageKey, 'true');
+    } catch (e) {
+      // localStorage might not be available
+    }
+  }
+}
+
+function shouldShowOnboarding(state) {
+  if (!state.enableOnboarding) return false;
+  
+  try {
+    return !localStorage.getItem(state.onboardingLocalStorageKey);
+  } catch (e) {
+    // localStorage might not be available
+    return true;
+  }
+}
+
+//
+
 // Expose config from forceGraph
 const bindFG = linkKapsule('forceGraph', ThreeForceGraph);
 const linkedFGProps = Object.assign(...[
@@ -104,6 +257,8 @@ export default Kapsule({
     onNodeHover: { default: () => {}, triggerUpdate: false },
     onLinkClick: { default: () => {}, triggerUpdate: false },
     onLinkHover: { default: () => {}, triggerUpdate: false },
+    enableOnboarding: { default: false, triggerUpdate: false },
+    onboardingLocalStorageKey: { default: '3d-force-graph-onboarding-completed', triggerUpdate: false },
     ...linkedFGProps,
     ...linkedRenderObjsProps
   },
@@ -125,6 +280,19 @@ export default Kapsule({
       if (state.animationFrameRequestId) {
         cancelAnimationFrame(state.animationFrameRequestId);
       }
+      return this;
+    },
+    startOnboarding: function(state) {
+      if (state.onboardingContainer) {
+        state.onboardingCurrentStep = 0;
+        state.onboardingContainer.style.display = 'block';
+        state.onboardingBackdrop.style.display = 'block';
+        updateOnboardingStep(state);
+      }
+      return this;
+    },
+    skipOnboarding: function(state) {
+      hideOnboarding(state);
       return this;
     },
     scene: state => state.renderObjs.scene(), // Expose scene
@@ -163,6 +331,21 @@ export default Kapsule({
     state.container.appendChild(infoElem = document.createElement('div'));
     infoElem.className = 'graph-info-msg';
     infoElem.textContent = '';
+
+    // Setup onboarding
+    if (state.enableOnboarding) {
+      createOnboardingHTML(state);
+      
+      // Show onboarding if not completed before
+      if (shouldShowOnboarding(state)) {
+        // Delay showing onboarding slightly to let the graph initialize
+        setTimeout(() => {
+          state.onboardingContainer.style.display = 'block';
+          state.onboardingBackdrop.style.display = 'block';
+          updateOnboardingStep(state);
+        }, 500);
+      }
+    }
 
     // config forcegraph
     state.forceGraph.onLoading(() => { infoElem.textContent = 'Loading...' });

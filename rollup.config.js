@@ -26,6 +26,10 @@ export default {
     }),
     babel({ exclude: 'node_modules/**' }),
     resolve(),
-    commonJs()
+    commonJs({
+      namedExports: {
+        'ngraph.graph': ['default']
+      }
+    })
   ]
 };
