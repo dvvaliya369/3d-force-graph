@@ -4,7 +4,7 @@ const three = window.THREE
   ? window.THREE // Prefer consumption from global THREE, if exists
   : { AmbientLight, DirectionalLight };
 
-import ThreeDragControls from 'three-dragcontrols';
+import { DragControls } from 'three-stdlib';
 import ThreeForceGraph from 'three-forcegraph';
 import ThreeRenderObjects from 'three-render-objects';
 
@@ -180,7 +180,7 @@ export default Kapsule({
 
       // Setup node drag interaction
       if (state.enableNodeDrag && state.enablePointerInteraction && state.forceEngine === 'd3') { // Can't access node positions programatically in ngraph
-        const dragControls = new ThreeDragControls(
+        const dragControls = new DragControls(
           state.graphData.nodes.map(node => node.__threeObj),
           camera,
           renderer.domElement

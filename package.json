@@ -35,26 +35,22 @@
   "dependencies": {
     "accessor-fn": "^1.2.2",
     "kapsule": "^1.9.1",
-    "three": "^0.94.0",
-    "three-dragcontrols": "^0.88.2",
-    "three-forcegraph": "^1.15.1",
-    "three-render-objects": "^1.0.6"
+    "three": "^0.168.0",
+    "three-stdlib": "^2.33.0",
+    "three-forcegraph": "^1.43.0",
+    "three-render-objects": "^1.40.0"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-external-helpers": "^6.22.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "postcss-nested": "^3.0.0",
-    "postcss-simple-vars": "^4.1.0",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.63.4",
-    "rollup-plugin-babel": "^3.0.7",
-    "rollup-plugin-commonjs": "^9.1.4",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-postcss": "^1.6.2",
-    "rollup-watch": "^4.3.1",
-    "uglify-js": "^3.4.6"
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "postcss-nested": "^6.2.0",
+    "postcss-simple-vars": "^7.0.1",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.28.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "uglify-js": "^3.19.3"
   }
 }
