@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - 3D Data Visualization Specialist</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Portfolio</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">3D Data Visualization</h1>
+            <p class="hero-subtitle">Creating Interactive Force-Directed Graphs</p>
+            <p class="hero-description">
+                Transforming complex data relationships into stunning 3D visualizations
+                using cutting-edge WebGL technology and force-simulation algorithms.
+            </p>
+            <div class="hero-buttons">
+                <a href="projects.html" class="btn btn-primary">View Projects</a>
+                <a href="contact.html" class="btn btn-secondary">Get in Touch</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="graph-preview" id="3d-graph"></div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Capabilities</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>3D Force Graphs</h3>
+                    <p>Interactive 3D network visualizations with physics-based simulations using d3-force-3d and ngraph engines.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>High Performance</h3>
+                    <p>Optimized WebGL rendering capable of handling thousands of nodes and links with smooth animations.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Customizable</h3>
+                    <p>Highly flexible styling options for nodes, links, colors, geometries, and interactive behaviors.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive</h3>
+                    <p>Works seamlessly across desktop and mobile devices with touch-enabled navigation controls.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="technologies">
+        <div class="container">
+            <h2 class="section-title">Technologies</h2>
+            <div class="tech-stack">
+                <div class="tech-item">ThreeJS</div>
+                <div class="tech-item">WebGL</div>
+                <div class="tech-item">D3.js</div>
+                <div class="tech-item">JavaScript</div>
+                <div class="tech-item">Node.js</div>
+                <div class="tech-item">Rollup</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Portfolio. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#" class="social-link">GitHub</a>
+                <a href="#" class="social-link">LinkedIn</a>
+                <a href="#" class="social-link">Twitter</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="//unpkg.com/3d-force-graph"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>
