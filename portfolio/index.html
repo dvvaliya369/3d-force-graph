@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Force Graph - Interactive Network Visualization</title>
+    <meta name="description" content="A powerful 3D force-directed graph visualization library using ThreeJS and WebGL">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="logo">3D Force Graph</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#examples" class="nav-link">Examples</a></li>
+                <li><a href="#docs" class="nav-link">Docs</a></li>
+                <li><a href="https://github.com/vasturiano/3d-force-graph" target="_blank" class="nav-link github-link">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-background">
+            <div id="3d-graph"></div>
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">3D Force-Directed</span><br>
+                Graph Visualization
+            </h1>
+            <p class="hero-subtitle">
+                A powerful web component to represent graph data structures in 3D space using force-directed layouts, ThreeJS, and WebGL
+            </p>
+            <div class="hero-buttons">
+                <a href="#examples" class="btn btn-primary">View Examples</a>
+                <a href="https://github.com/vasturiano/3d-force-graph" target="_blank" class="btn btn-secondary">
+                    <span>Get Started</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-value">3D</div>
+                    <div class="stat-label">Dimensions</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">WebGL</div>
+                    <div class="stat-label">Powered</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">Real-time</div>
+                    <div class="stat-label">Physics</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">About the Library</h2>
+                <p class="section-subtitle">Powerful 3D network visualization made simple</p>
+            </div>
+            <div class="about-grid">
+                <div class="about-card">
+                    <div class="card-icon">🎨</div>
+                    <h3>Beautiful Visualizations</h3>
+                    <p>Create stunning 3D graph visualizations with customizable nodes, links, and interactive elements that bring your data to life.</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">⚡</div>
+                    <h3>High Performance</h3>
+                    <p>Built on ThreeJS and WebGL for smooth rendering of large graphs with thousands of nodes and links in real-time.</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">🔧</div>
+                    <h3>Highly Customizable</h3>
+                    <p>Extensive API with support for custom node geometries, link styling, force configurations, and interaction callbacks.</p>
+                </div>
+                <div class="about-card">
+                    <div class="card-icon">📱</div>
+                    <h3>Responsive Design</h3>
+                    <p>Works seamlessly across devices with touch support, responsive layouts, and adaptive rendering capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Key Features</h2>
+                <p class="section-subtitle">Everything you need for advanced graph visualization</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-number">01</div>
+                    <h3>Force-Directed Layout</h3>
+                    <p>Automatic graph layout using d3-force-3d or ngraph physics engines for natural node positioning.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">02</div>
+                    <h3>Interactive Controls</h3>
+                    <p>Zoom, pan, rotate with trackball controls. Click, hover, and drag nodes for dynamic interaction.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">03</div>
+                    <h3>Custom Styling</h3>
+                    <p>Full control over node colors, sizes, shapes, link styles, arrows, particles, and materials.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">04</div>
+                    <h3>Directional Links</h3>
+                    <p>Support for arrows, moving particles, curved links, and self-referencing connections.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">05</div>
+                    <h3>Dynamic Updates</h3>
+                    <p>Real-time graph updates with smooth transitions and incremental data changes.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-number">06</div>
+                    <h3>Extensible API</h3>
+                    <p>Access to ThreeJS scene, camera, and renderer for advanced customization and extensions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Examples Section -->
+    <section id="examples" class="section examples">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Live Examples</h2>
+                <p class="section-subtitle">Explore interactive demonstrations</p>
+            </div>
+            <div class="examples-grid">
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Basic</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Basic Graph</h3>
+                        <p>Simple force-directed graph with default styling and interactions.</p>
+                        <a href="../example/basic/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Advanced</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Large Graph</h3>
+                        <p>Performance demonstration with ~4000 nodes and links.</p>
+                        <a href="../example/large-graph/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Styling</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Auto-Colored</h3>
+                        <p>Automatic color grouping for nodes and links by category.</p>
+                        <a href="../example/auto-colored/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Interactive</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Click to Focus</h3>
+                        <p>Camera animation and node focusing on click interactions.</p>
+                        <a href="../example/click-to-focus/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Animation</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Directional Particles</h3>
+                        <p>Animated particles flowing along link directions.</p>
+                        <a href="../example/directional-links-particles/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-preview">
+                        <div class="example-tag">Custom</div>
+                    </div>
+                    <div class="example-content">
+                        <h3>Custom Geometry</h3>
+                        <p>Custom 3D shapes and geometries for graph nodes.</p>
+                        <a href="../example/custom-node-geometry/index.html" class="example-link">View Demo →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs" class="section docs">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Quick Start</h2>
+                <p class="section-subtitle">Get up and running in minutes</p>
+            </div>
+            <div class="docs-content">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Installation</span>
+                        <button class="copy-btn" data-copy="npm">Copy</button>
+                    </div>
+                    <pre><code class="language-bash">npm install 3d-force-graph</code></pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Import</span>
+                        <button class="copy-btn" data-copy="import">Copy</button>
+                    </div>
+                    <pre><code class="language-javascript">import ForceGraph3D from '3d-force-graph';</code></pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-title">Usage</span>
+                        <button class="copy-btn" data-copy="usage">Copy</button>
+                    </div>
+                    <pre><code class="language-javascript">const myGraph = ForceGraph3D()
+  (document.getElementById('graph'))
+  .graphData({
+    nodes: [
+      { id: 'node1', name: 'Node 1' },
+      { id: 'node2', name: 'Node 2' }
+    ],
+    links: [
+      { source: 'node1', target: 'node2' }
+    ]
+  });</code></pre>
+                </div>
+            </div>
+            <div class="docs-links">
+                <a href="https://github.com/vasturiano/3d-force-graph#api-reference" target="_blank" class="docs-link-card">
+                    <h3>📚 API Reference</h3>
+                    <p>Complete documentation of all methods and properties</p>
+                </a>
+                <a href="https://github.com/vasturiano/3d-force-graph/tree/master/example" target="_blank" class="docs-link-card">
+                    <h3>💡 Examples</h3>
+                    <p>Browse all example implementations and source code</p>
+                </a>
+                <a href="https://github.com/vasturiano/3d-force-graph/issues" target="_blank" class="docs-link-card">
+                    <h3>🐛 Issues</h3>
+                    <p>Report bugs or request new features</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>3D Force Graph</h3>
+                    <p>A powerful web component for 3D network visualization using ThreeJS and WebGL.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://github.com/vasturiano/3d-force-graph">GitHub</a></li>
+                        <li><a href="https://www.npmjs.com/package/3d-force-graph">NPM Package</a></li>
+                        <li><a href="https://github.com/vasturiano/3d-force-graph#api-reference">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Related Projects</h4>
+                    <ul>
+                        <li><a href="https://github.com/vasturiano/3d-force-graph-vr">3D Force Graph VR</a></li>
+                        <li><a href="https://github.com/vasturiano/force-graph">2D Force Graph</a></li>
+                        <li><a href="https://github.com/vasturiano/react-force-graph">React Bindings</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Community</h4>
+                    <ul>
+                        <li><a href="https://github.com/vasturiano/3d-force-graph/issues">Issues</a></li>
+                        <li><a href="https://github.com/vasturiano/3d-force-graph/discussions">Discussions</a></li>
+                        <li><a href="https://github.com/vasturiano">Author</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 3D Force Graph. Created by <a href="http://bl.ocks.org/vasturiano">Vasco Asturiano</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="//unpkg.com/3d-force-graph"></script>
+    <script src="app.js"></script>
+</body>
+</html>
