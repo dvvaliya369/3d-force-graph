@@ -30,7 +30,8 @@
     "watch": "rollup -c -w",
     "minify": "uglifyjs dist/3d-force-graph.js -o dist/3d-force-graph.min.js -c -m --comments '/Version/'",
     "build-module": "rollup -c rollup.config.module.js",
-    "prepublish": "npm run build && npm run minify && npm run build-module"
+    "prepublish": "npm run build && npm run minify && npm run build-module",
+    "portfolio": "node portfolio/server.mjs"
   },
   "dependencies": {
     "accessor-fn": "^1.2.2",
