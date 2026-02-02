@@ -25,6 +25,7 @@ Check out the examples:
 * [Dynamic data changes](https://vasturiano.github.io/3d-force-graph/example/dynamic/) ([source](https://github.com/vasturiano/3d-force-graph/blob/master/example/dynamic/index.html))
 * [Node collision detection](https://vasturiano.github.io/3d-force-graph/example/collision-detection/) ([source](https://github.com/vasturiano/3d-force-graph/blob/master/example/collision-detection/index.html))
 * [Add external objects to scene](https://vasturiano.github.io/3d-force-graph/example/scene/) ([source](https://github.com/vasturiano/3d-force-graph/blob/master/example/scene/index.html))
+* [Interactive onboarding tutorial](https://vasturiano.github.io/3d-force-graph/example/onboarding/) ([source](https://github.com/vasturiano/3d-force-graph/blob/master/example/onboarding/index.html))
 
 See also the [VR version](https://github.com/vasturiano/3d-force-graph-vr) and the [2D canvas version](https://github.com/vasturiano/force-graph).
 
@@ -49,6 +50,60 @@ var myGraph = ForceGraph3D();
 myGraph(<myDOMElement>)
     .graphData(<myData>);
 ```
+
+## Onboarding
+
+New to 3D Force Graph? Check out the [interactive onboarding tutorial](https://vasturiano.github.io/3d-force-graph/example/onboarding/) which guides you through the key features step-by-step.
+
+You can also add onboarding to your own visualizations using the **ForceGraphOnboarding** plugin:
+
+```html
+<script src="//unpkg.com/3d-force-graph"></script>
+<script src="path/to/force-graph-onboarding.js"></script>
+
+<script>
+  const Graph = ForceGraph3D()(elem).graphData(data);
+  
+  // Initialize onboarding
+  const onboarding = ForceGraphOnboarding(Graph, {
+    autoStart: true,  // Start automatically on first visit
+    steps: [
+      {
+        title: 'Welcome!',
+        content: '<p>Custom onboarding step...</p>',
+        action: (graph) => {
+          // Optional: perform actions like moving camera
+          graph.cameraPosition({ x: 0, y: 0, z: 300 });
+        }
+      },
+      // ... more steps
+    ]
+  });
+</script>
+```
+
+### Onboarding Plugin API
+
+| Method | Description |
+| --- | --- |
+| `start()` | Start the onboarding tutorial |
+| `next()` | Move to the next step |
+| `previous()` | Move to the previous step |
+| `skip()` | Skip the onboarding |
+| `reset()` | Reset completion status |
+| `hasCompleted()` | Check if onboarding has been completed |
+| `destroy()` | Remove onboarding from DOM |
+
+### Plugin Options
+
+| Option | Type | Description | Default |
+| --- | --- | --- | --- |
+| `steps` | Array | Array of step objects with `title`, `content`, and optional `action` | Default tutorial steps |
+| `autoStart` | Boolean | Whether to auto-start on first visit | `false` |
+| `storageKey` | String | LocalStorage key for tracking completion | `'3d-force-graph-onboarding'` |
+| `theme` | Object | Customize colors and styling | See plugin source |
+| `onComplete` | Function | Callback when tutorial completes | `null` |
+| `onSkip` | Function | Callback when tutorial is skipped | `null` |
 
 ## API reference
 

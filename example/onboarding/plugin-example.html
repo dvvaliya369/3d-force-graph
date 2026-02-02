@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Force Graph - Onboarding Plugin Example</title>
+  <style>
+    body { 
+      margin: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    #3d-graph {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: #545b62;
+      box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+    }
+  </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+  <script src="../../src/force-graph-onboarding.js"></script>
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+  
+  <div class="controls">
+    <button class="btn" onclick="onboarding.start()">🎓 Start Tutorial</button>
+    <button class="btn btn-secondary" onclick="onboarding.reset(); onboarding.start()">🔄 Reset & Restart</button>
+  </div>
+
+  <script>
+    // Generate sample graph data
+    function generateGraphData() {
+      const N = 100;
+      return {
+        nodes: [...Array(N).keys()].map(i => ({ 
+          id: i,
+          name: `Node ${i}`,
+          val: Math.random() * 10 + 1,
+          group: Math.floor(Math.random() * 5)
+        })),
+        links: [...Array(N * 2).keys()]
+          .map(() => ({
+            source: Math.floor(Math.random() * N),
+            target: Math.floor(Math.random() * N)
+          }))
+          .filter(link => link.source !== link.target)
+      };
+    }
+
+    // Initialize the graph
+    const Graph = ForceGraph3D()
+      (document.getElementById('3d-graph'))
+      .graphData(generateGraphData())
+      .nodeLabel('name')
+      .nodeAutoColorBy('group')
+      .nodeVal('val')
+      .enableNodeDrag(true)
+      .onNodeClick(node => {
+        // Focus camera on clicked node
+        const distance = 200;
+        const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+        Graph.cameraPosition(
+          { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+          node,
+          1000
+        );
+      })
+      .onNodeHover(node => {
+        document.getElementById('3d-graph').style.cursor = node ? 'pointer' : 'default';
+      });
+
+    // Custom onboarding steps
+    const customSteps = [
+      {
+        title: 'Welcome! 👋',
+        content: `
+          <p>This is a custom onboarding example showing how to integrate the onboarding plugin with your 3D Force Graph.</p>
+          <p>The plugin is flexible and can be customized to fit your needs!</p>
+        `
+      },
+      {
+        title: 'Graph Overview',
+        content: `
+          <p>You're looking at a network visualization with:</p>
+          <ul>
+            <li><strong>${Graph.graphData().nodes.length} nodes</strong> - Colored by group</li>
+            <li><strong>${Graph.graphData().links.length} links</strong> - Showing relationships</li>
+          </ul>
+          <p>The size of each node is determined by its <code>val</code> property.</p>
+        `
+      },
+      {
+        title: 'Camera Navigation',
+        content: `
+          <p>Navigate the 3D space using mouse controls:</p>
+          <ul>
+            <li><strong>Left-click + Drag</strong> - Rotate view</li>
+            <li><strong>Right-click + Drag</strong> - Pan view</li>
+            <li><strong>Scroll</strong> - Zoom in/out</li>
+          </ul>
+          <p>Try it now!</p>
+        `,
+        action: (graph) => {
+          // Rotate camera smoothly
+          graph.cameraPosition(
+            { x: 300, y: 200, z: 300 },
+            { x: 0, y: 0, z: 0 },
+            2000
+          );
+        }
+      },
+      {
+        title: 'Node Interactions',
+        content: `
+          <p>Interact with nodes:</p>
+          <ul>
+            <li><strong>Hover</strong> - See node name in tooltip</li>
+            <li><strong>Click</strong> - Focus camera on node</li>
+            <li><strong>Drag</strong> - Reposition nodes (enabled)</li>
+          </ul>
+          <p>Click on a node to center it!</p>
+        `,
+        action: (graph) => {
+          // Focus on a specific node
+          const nodes = graph.graphData().nodes;
+          if (nodes.length > 0) {
+            const targetNode = nodes[Math.floor(nodes.length / 2)];
+            const distance = 150;
+            const distRatio = 1 + distance/Math.hypot(targetNode.x, targetNode.y, targetNode.z);
+            
+            graph.cameraPosition(
+              { 
+                x: targetNode.x * distRatio, 
+                y: targetNode.y * distRatio, 
+                z: targetNode.z * distRatio 
+              },
+              targetNode,
+              1500
+            );
+          }
+        }
+      },
+      {
+        title: 'Colored Groups',
+        content: `
+          <p>Nodes are automatically colored by their <code>group</code> property.</p>
+          <p>This makes it easy to visualize clusters and communities in your network!</p>
+          <ul>
+            <li>Each color represents a different group</li>
+            <li>Nodes in the same group tend to be more connected</li>
+          </ul>
+        `
+      },
+      {
+        title: 'All Set! 🎉',
+        content: `
+          <p>You're ready to explore!</p>
+          <p><strong>Useful tips:</strong></p>
+          <ul>
+            <li>Check the API documentation for customization options</li>
+            <li>Look at other examples for advanced features</li>
+            <li>Use the buttons in the top-right to restart this tutorial</li>
+          </ul>
+          <p>Have fun visualizing! 🚀</p>
+        `,
+        action: (graph) => {
+          // Return to overview position
+          graph.cameraPosition(
+            { x: 0, y: 0, z: 400 },
+            { x: 0, y: 0, z: 0 },
+            2000
+          );
+        }
+      }
+    ];
+
+    // Initialize onboarding with custom configuration
+    const onboarding = ForceGraphOnboarding(Graph, {
+      steps: customSteps,
+      autoStart: true, // Auto-start on first visit
+      storageKey: '3d-force-graph-plugin-demo',
+      theme: {
+        primaryColor: '#007bff',
+        overlayColor: 'rgba(0, 0, 0, 0.75)',
+        borderRadius: '12px'
+      },
+      onComplete: () => {
+        console.log('Onboarding completed!');
+      },
+      onSkip: () => {
+        console.log('Onboarding skipped');
+      }
+    });
+
+    // Make onboarding accessible globally for the control buttons
+    window.onboarding = onboarding;
+  </script>
+</body>
+</html>

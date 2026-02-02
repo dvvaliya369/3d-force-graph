@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Force Graph - Interactive Onboarding</title>
+  <style>
+    body { 
+      margin: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      overflow: hidden;
+    }
+    
+    #3d-graph {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* Onboarding Overlay Styles */
+    .onboarding-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .onboarding-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .onboarding-content {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      position: relative;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .onboarding-header {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    .onboarding-body {
+      font-size: 16px;
+      line-height: 1.6;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .onboarding-body ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .onboarding-body li {
+      margin: 8px 0;
+    }
+
+    .onboarding-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .onboarding-progress {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .onboarding-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #545b62;
+    }
+
+    .btn-skip {
+      background: transparent;
+      color: #6c757d;
+      text-decoration: underline;
+    }
+
+    .btn-skip:hover {
+      color: #333;
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      position: fixed;
+      border: 3px solid #007bff;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 9999;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .highlight-box.active {
+      opacity: 1;
+    }
+
+    /* Tooltip pointer */
+    .tooltip-pointer {
+      position: fixed;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 9998;
+      max-width: 300px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .tooltip-pointer.active {
+      opacity: 1;
+    }
+
+    .tooltip-pointer::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+    }
+
+    .tooltip-pointer.bottom::after {
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 0 10px 10px 10px;
+      border-color: transparent transparent white transparent;
+    }
+
+    .restart-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .restart-button:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    }
+
+    /* Demo highlight styles */
+    .demo-highlight {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+  </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+  <div class="highlight-box"></div>
+  <button class="restart-button" onclick="restartOnboarding()">🎓 Restart Tutorial</button>
+
+  <div class="onboarding-overlay">
+    <div class="onboarding-content">
+      <div class="onboarding-header" id="step-title"></div>
+      <div class="onboarding-body" id="step-content"></div>
+      <div class="onboarding-footer">
+        <div class="onboarding-progress" id="step-progress"></div>
+        <div class="onboarding-buttons">
+          <button class="btn btn-skip" onclick="skipOnboarding()">Skip Tutorial</button>
+          <button class="btn btn-secondary" id="prev-btn" onclick="previousStep()" style="display: none;">Previous</button>
+          <button class="btn btn-primary" id="next-btn" onclick="nextStep()">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Onboarding Steps Configuration
+    const onboardingSteps = [
+      {
+        title: "Welcome to 3D Force Graph! 🎉",
+        content: `
+          <p>This interactive tutorial will guide you through the key features of the 3D Force Graph library.</p>
+          <p>You'll learn how to:</p>
+          <ul>
+            <li>Navigate and explore the 3D space</li>
+            <li>Interact with nodes and links</li>
+            <li>Customize visualizations</li>
+            <li>Understand force simulation</li>
+          </ul>
+          <p>Let's get started!</p>
+        `,
+        action: null
+      },
+      {
+        title: "Understanding the Graph Structure 📊",
+        content: `
+          <p>A force-directed graph consists of two main elements:</p>
+          <ul>
+            <li><strong>Nodes</strong> - The colored spheres representing entities</li>
+            <li><strong>Links</strong> - The lines connecting related nodes</li>
+          </ul>
+          <p>The force simulation automatically arranges nodes to minimize visual clutter and reveal the graph's structure.</p>
+        `,
+        action: () => {
+          // Highlight a node
+          Graph.cooldownTime(0); // Stop animation
+        }
+      },
+      {
+        title: "Camera Navigation 🎥",
+        content: `
+          <p>Navigate the 3D space using your mouse:</p>
+          <ul>
+            <li><strong>Left-click + Drag</strong> - Rotate the camera</li>
+            <li><strong>Right-click + Drag</strong> - Pan the view</li>
+            <li><strong>Scroll</strong> - Zoom in/out</li>
+          </ul>
+          <p>Try it now! Move your camera around to explore different angles.</p>
+        `,
+        action: () => {
+          // Animate camera to a specific position
+          Graph.cameraPosition(
+            { x: 200, y: 200, z: 200 },
+            { x: 0, y: 0, z: 0 },
+            2000
+          );
+        }
+      },
+      {
+        title: "Node Interaction 🎯",
+        content: `
+          <p>You can interact with nodes in several ways:</p>
+          <ul>
+            <li><strong>Hover</strong> - See node information in tooltips</li>
+            <li><strong>Click</strong> - Select and focus on specific nodes</li>
+            <li><strong>Drag</strong> - Move nodes to new positions (enabled in this demo)</li>
+          </ul>
+          <p>Try hovering over and clicking different nodes!</p>
+        `,
+        action: () => {
+          // Add click handler demo
+          highlightRandomNode();
+        }
+      },
+      {
+        title: "Force Simulation ⚡",
+        content: `
+          <p>The graph uses physics simulation to position nodes:</p>
+          <ul>
+            <li><strong>Attraction</strong> - Connected nodes pull together</li>
+            <li><strong>Repulsion</strong> - All nodes push each other apart</li>
+            <li><strong>Centering</strong> - Keeps the graph centered</li>
+          </ul>
+          <p>When you drag a node, the simulation re-heats and adjusts other nodes accordingly.</p>
+        `,
+        action: () => {
+          // Restart simulation
+          Graph.d3ReheatSimulation();
+        }
+      },
+      {
+        title: "Customization Options 🎨",
+        content: `
+          <p>3D Force Graph is highly customizable:</p>
+          <ul>
+            <li><strong>Node size, color, and shape</strong> - Visual encoding of data</li>
+            <li><strong>Link thickness and color</strong> - Relationship strength</li>
+            <li><strong>Directional arrows and particles</strong> - Flow direction</li>
+            <li><strong>Custom 3D objects</strong> - Replace default geometries</li>
+          </ul>
+          <p>Check out the other examples to see these features in action!</p>
+        `,
+        action: () => {
+          // Demonstrate color change
+          demonstrateCustomization();
+        }
+      },
+      {
+        title: "You're All Set! 🚀",
+        content: `
+          <p>Congratulations! You've completed the onboarding tutorial.</p>
+          <p><strong>Next steps:</strong></p>
+          <ul>
+            <li>Explore the <a href="https://github.com/vasturiano/3d-force-graph" target="_blank">API documentation</a></li>
+            <li>Check out more <a href="../">examples</a></li>
+            <li>Build your own 3D graph visualization</li>
+          </ul>
+          <p>You can restart this tutorial anytime using the button in the bottom-right corner.</p>
+        `,
+        action: () => {
+          Graph.cooldownTime(15000); // Resume normal animation
+        }
+      }
+    ];
+
+    let currentStep = 0;
+    let Graph;
+
+    // Sample graph data
+    const generateGraphData = () => {
+      const N = 80;
+      const gData = {
+        nodes: [...Array(N).keys()].map(i => ({ 
+          id: i,
+          name: `Node ${i}`,
+          val: Math.random() * 10 + 1,
+          color: `hsl(${Math.random() * 360}, 70%, 60%)`
+        })),
+        links: [...Array(N * 2).keys()]
+          .map(() => ({
+            source: Math.floor(Math.random() * N),
+            target: Math.floor(Math.random() * N)
+          }))
+          .filter(link => link.source !== link.target)
+      };
+      return gData;
+    };
+
+    // Initialize graph
+    function initGraph() {
+      Graph = ForceGraph3D()
+        (document.getElementById('3d-graph'))
+        .graphData(generateGraphData())
+        .nodeLabel('name')
+        .nodeAutoColorBy('group')
+        .nodeVal('val')
+        .enableNodeDrag(true)
+        .onNodeClick(node => {
+          // Focus on clicked node
+          const distance = 200;
+          const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+          Graph.cameraPosition(
+            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+            node,
+            1000
+          );
+        })
+        .onNodeHover(node => {
+          document.getElementById('3d-graph').style.cursor = node ? 'pointer' : 'default';
+        });
+    }
+
+    // Onboarding functions
+    function showStep(stepIndex) {
+      if (stepIndex < 0 || stepIndex >= onboardingSteps.length) return;
+      
+      currentStep = stepIndex;
+      const step = onboardingSteps[stepIndex];
+      
+      document.getElementById('step-title').textContent = step.title;
+      document.getElementById('step-content').innerHTML = step.content;
+      document.getElementById('step-progress').textContent = `Step ${stepIndex + 1} of ${onboardingSteps.length}`;
+      
+      // Update button visibility
+      document.getElementById('prev-btn').style.display = stepIndex > 0 ? 'inline-block' : 'none';
+      document.getElementById('next-btn').textContent = stepIndex === onboardingSteps.length - 1 ? 'Finish' : 'Next';
+      
+      // Execute step action
+      if (step.action) {
+        setTimeout(step.action, 300);
+      }
+      
+      // Show overlay
+      document.querySelector('.onboarding-overlay').classList.add('active');
+    }
+
+    function nextStep() {
+      if (currentStep < onboardingSteps.length - 1) {
+        showStep(currentStep + 1);
+      } else {
+        finishOnboarding();
+      }
+    }
+
+    function previousStep() {
+      if (currentStep > 0) {
+        showStep(currentStep - 1);
+      }
+    }
+
+    function skipOnboarding() {
+      finishOnboarding();
+    }
+
+    function finishOnboarding() {
+      document.querySelector('.onboarding-overlay').classList.remove('active');
+      Graph.cooldownTime(15000); // Resume normal animation
+      localStorage.setItem('3d-force-graph-onboarding-completed', 'true');
+    }
+
+    function restartOnboarding() {
+      currentStep = 0;
+      showStep(0);
+    }
+
+    // Helper functions for demonstrations
+    function highlightRandomNode() {
+      const nodes = Graph.graphData().nodes;
+      if (nodes.length === 0) return;
+      
+      const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+      const distance = 150;
+      const distRatio = 1 + distance/Math.hypot(randomNode.x, randomNode.y, randomNode.z);
+      
+      Graph.cameraPosition(
+        { x: randomNode.x * distRatio, y: randomNode.y * distRatio, z: randomNode.z * distRatio },
+        randomNode,
+        1500
+      );
+    }
+
+    function demonstrateCustomization() {
+      const graphData = Graph.graphData();
+      
+      // Temporarily change node colors to show customization
+      graphData.nodes.forEach((node, idx) => {
+        setTimeout(() => {
+          node.color = `hsl(${(idx * 137.5) % 360}, 80%, 60%)`;
+        }, idx * 10);
+      });
+      
+      Graph.graphData(graphData);
+    }
+
+    // Initialize
+    initGraph();
+    
+    // Check if onboarding has been completed before
+    const hasCompletedOnboarding = localStorage.getItem('3d-force-graph-onboarding-completed');
+    
+    // Start onboarding after a short delay
+    setTimeout(() => {
+      if (!hasCompletedOnboarding) {
+        showStep(0);
+      }
+    }, 500);
+
+    // Allow manual restart
+    window.restartOnboarding = restartOnboarding;
+    window.nextStep = nextStep;
+    window.previousStep = previousStep;
+    window.skipOnboarding = skipOnboarding;
+  </script>
+</body>
+</html>
