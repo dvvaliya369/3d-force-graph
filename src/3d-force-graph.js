@@ -147,6 +147,7 @@ export default Kapsule({
     // Add relative container
     domNode.appendChild(state.container = document.createElement('div'));
     state.container.style.position = 'relative';
+    state.container.classList.add('graph-container');
 
     // Add renderObjs
     const roDomNode = document.createElement('div');
