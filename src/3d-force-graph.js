@@ -17,6 +17,16 @@ import linkKapsule from './kapsule-link.js';
 
 const CAMERA_DISTANCE2NODES_FACTOR = 150;
 
+// Escape HTML special characters to prevent XSS via tooltip content
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 //
 
 // Expose config from forceGraph
@@ -275,7 +285,8 @@ export default Kapsule({
       })
       .tooltipContent(obj => {
         const graphObj = getGraphObj(obj);
-        return graphObj ? accessorFn(state[`${graphObj.__graphObjType}Label`])(graphObj.__data) || '' : '';
+        const label = graphObj ? accessorFn(state[`${graphObj.__graphObjType}Label`])(graphObj.__data) || '' : '';
+        return label ? escapeHtml(label) : '';
       })
       .onHover(obj => {
         // Update tooltip and trigger onHover events
