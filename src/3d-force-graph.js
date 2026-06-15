@@ -218,6 +218,8 @@ export default Kapsule({
 
         dragControls.addEventListener('dragend', function (event) {
           const node = event.object.__data;
+          if (!node) return; // Guard against objects without node data
+
           const initPos = node.__initialFixedPos;
 
           if (initPos) {
@@ -236,7 +238,7 @@ export default Kapsule({
             .d3AlphaTarget(0)   // release engine low intensity
             .resetCountdown();  // let the engine readjust after releasing fixed nodes
 
-          if (state.enableNavigationControls) {
+          if (state.enableNavigationControls && tbControls) {
             tbControls.enabled = true; // Re-enable trackball controls
           }
 
