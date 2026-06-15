@@ -275,7 +275,15 @@ export default Kapsule({
       })
       .tooltipContent(obj => {
         const graphObj = getGraphObj(obj);
-        return graphObj ? accessorFn(state[`${graphObj.__graphObjType}Label`])(graphObj.__data) || '' : '';
+        if (!graphObj) return '';
+        const label = accessorFn(state[`${graphObj.__graphObjType}Label`])(graphObj.__data) || '';
+        // Escape HTML to prevent XSS via node/link label fields injected into innerHTML
+        return label.toString()
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#x27;');
       })
       .onHover(obj => {
         // Update tooltip and trigger onHover events
