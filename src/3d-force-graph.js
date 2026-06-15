@@ -124,6 +124,7 @@ export default Kapsule({
     stopAnimation: function(state) {
       if (state.animationFrameRequestId) {
         cancelAnimationFrame(state.animationFrameRequestId);
+        state.animationFrameRequestId = null;
       }
       return this;
     },
@@ -179,7 +180,7 @@ export default Kapsule({
       }
 
       // Setup node drag interaction
-      if (state.enableNodeDrag && state.enablePointerInteraction && state.forceEngine === 'd3') { // Can't access node positions programatically in ngraph
+      if (state.enableNodeDrag && state.enablePointerInteraction && state.forceEngine !== 'ngraph') { // Can't access node positions programatically in ngraph
         const dragControls = new ThreeDragControls(
           state.graphData.nodes.map(node => node.__threeObj),
           camera,
