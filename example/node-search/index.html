@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<head>
+  <title>3D Force Graph – Node Search & Highlight</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0a0a1a;
+      color: #e0e0ff;
+    }
+
+    #search-panel {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 340px;
+    }
+
+    #search-panel h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #aab4ff;
+      text-shadow: 0 0 8px rgba(100, 120, 255, 0.6);
+    }
+
+    #search-wrap {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 6px;
+    }
+
+    #search-input {
+      flex: 1;
+      padding: 8px 14px;
+      border: 1px solid rgba(120, 140, 255, 0.4);
+      border-radius: 24px;
+      background: rgba(10, 10, 40, 0.85);
+      color: #e0e0ff;
+      font-size: 14px;
+      outline: none;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #search-input::placeholder {
+      color: rgba(180, 180, 220, 0.4);
+    }
+
+    #search-input:focus {
+      border-color: rgba(120, 140, 255, 0.8);
+      box-shadow: 0 0 12px rgba(100, 120, 255, 0.35);
+    }
+
+    #clear-btn {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 24px;
+      background: rgba(100, 120, 255, 0.2);
+      color: #aab4ff;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #clear-btn:hover {
+      background: rgba(100, 120, 255, 0.45);
+    }
+
+    #results-info {
+      font-size: 12px;
+      color: rgba(180, 180, 255, 0.6);
+      min-height: 16px;
+      text-align: center;
+    }
+
+    #results-info.has-results {
+      color: #88aaff;
+    }
+
+    #results-info.no-results {
+      color: #ff8888;
+    }
+
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: rgba(200, 200, 255, 0.7);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .legend-dot.default  { background: rgba(0, 210, 255, 0.7); }
+    .legend-dot.match    { background: #ff5577; box-shadow: 0 0 6px #ff5577; }
+    .legend-dot.neighbor { background: #ffaa33; box-shadow: 0 0 6px #ffaa33; }
+  </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+
+  <div id="search-panel">
+    <h2>Node Search &amp; Highlight</h2>
+    <div id="search-wrap">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search by node name or id…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="clear-btn">Clear</button>
+    </div>
+    <div id="results-info"></div>
+  </div>
+
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot default"></div>Default node</div>
+    <div class="legend-item"><div class="legend-dot match"></div>Search match</div>
+    <div class="legend-item"><div class="legend-dot neighbor"></div>Direct neighbor</div>
+  </div>
+
+  <script>
+    // ─── Build a random named graph ───────────────────────────────────────────
+
+    const FIRST_NAMES = [
+      'Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank', 'Grace', 'Henry',
+      'Iris', 'Jake', 'Karen', 'Leo', 'Mia', 'Nate', 'Olivia', 'Peter',
+      'Quinn', 'Rachel', 'Sam', 'Tina', 'Uma', 'Victor', 'Wendy', 'Xander',
+      'Yara', 'Zoe', 'Alex', 'Beth', 'Chris', 'Diana', 'Evan', 'Fiona',
+      'George', 'Hannah', 'Ivan', 'Julia', 'Kevin', 'Laura', 'Mike', 'Nina'
+    ];
+
+    const N = FIRST_NAMES.length;
+
+    const gData = {
+      nodes: FIRST_NAMES.map((name, i) => ({ id: i, name })),
+      links: FIRST_NAMES
+        .filter((_, id) => id > 0)
+        .map((_, idx) => {
+          const id = idx + 1;
+          return {
+            source: id,
+            target: Math.round(Math.random() * (id - 1))
+          };
+        })
+        // Add a few extra cross-links for a denser graph
+        .concat(
+          Array.from({ length: Math.floor(N * 0.4) }, () => ({
+            source: Math.floor(Math.random() * N),
+            target: Math.floor(Math.random() * N)
+          })).filter(l => l.source !== l.target)
+        )
+    };
+
+    // ─── State ────────────────────────────────────────────────────────────────
+
+    let matchedNodes = new Set();   // nodes whose name/id matches the search term
+    let neighborNodes = new Set();  // direct neighbors of matched nodes
+
+    // Build adjacency map for fast neighbor lookup
+    const adjacency = {};
+    gData.nodes.forEach(n => { adjacency[n.id] = new Set(); });
+
+    function rebuildAdjacency() {
+      gData.nodes.forEach(n => { adjacency[n.id] = new Set(); });
+      gData.links.forEach(link => {
+        const s = typeof link.source === 'object' ? link.source.id : link.source;
+        const t = typeof link.target === 'object' ? link.target.id : link.target;
+        if (adjacency[s]) adjacency[s].add(t);
+        if (adjacency[t]) adjacency[t].add(s);
+      });
+    }
+
+    // ─── Graph setup ──────────────────────────────────────────────────────────
+
+    const Graph = ForceGraph3D()(document.getElementById('3d-graph'))
+      .graphData(gData)
+      .backgroundColor('#0a0a1a')
+      .nodeLabel(node => `<span style="color:#fff;font-family:system-ui">${node.name} (id: ${node.id})</span>`)
+      .nodeColor(node => {
+        if (matchedNodes.has(node.id))   return '#ff5577';
+        if (neighborNodes.has(node.id))  return '#ffaa33';
+        return 'rgba(0,210,255,0.7)';
+      })
+      .nodeVal(node => {
+        if (matchedNodes.has(node.id))   return 10;  // enlarged for matches
+        if (neighborNodes.has(node.id))  return 4;
+        return 2;
+      })
+      .linkColor(() => 'rgba(100,140,255,0.25)')
+      .linkWidth(link => {
+        const s = typeof link.source === 'object' ? link.source.id : link.source;
+        const t = typeof link.target === 'object' ? link.target.id : link.target;
+        if (matchedNodes.has(s) || matchedNodes.has(t)) return 2.5;
+        return 0.8;
+      })
+      .linkDirectionalParticles(link => {
+        const s = typeof link.source === 'object' ? link.source.id : link.source;
+        const t = typeof link.target === 'object' ? link.target.id : link.target;
+        return (matchedNodes.has(s) || matchedNodes.has(t)) ? 3 : 0;
+      })
+      .linkDirectionalParticleWidth(2)
+      .linkDirectionalParticleColor(() => '#ff5577')
+      .onNodeClick(node => {
+        // On click, fly camera to the node
+        const distance = 80;
+        const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+        Graph.cameraPosition(
+          { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+          node,
+          1200
+        );
+      });
+
+    // Rebuild adjacency once the engine has resolved node objects
+    Graph.onEngineStop(() => rebuildAdjacency());
+
+    // ─── Search logic ─────────────────────────────────────────────────────────
+
+    const searchInput   = document.getElementById('search-input');
+    const clearBtn      = document.getElementById('clear-btn');
+    const resultsInfo   = document.getElementById('results-info');
+
+    function applySearch(query) {
+      const q = query.trim().toLowerCase();
+
+      if (!q) {
+        matchedNodes.clear();
+        neighborNodes.clear();
+        resultsInfo.textContent = '';
+        resultsInfo.className = '';
+        refreshGraph();
+        return;
+      }
+
+      // Find matching nodes (by name or numeric id)
+      const matches = gData.nodes.filter(node => {
+        return (
+          node.name.toLowerCase().includes(q) ||
+          String(node.id).includes(q)
+        );
+      });
+
+      matchedNodes = new Set(matches.map(n => n.id));
+
+      // Gather all direct neighbors of matched nodes
+      neighborNodes = new Set();
+      matchedNodes.forEach(id => {
+        if (adjacency[id]) {
+          adjacency[id].forEach(nid => {
+            if (!matchedNodes.has(nid)) neighborNodes.add(nid);
+          });
+        }
+      });
+
+      // Update results info
+      if (matches.length === 0) {
+        resultsInfo.textContent = 'No nodes found';
+        resultsInfo.className = 'no-results';
+      } else {
+        resultsInfo.textContent =
+          `${matches.length} match${matches.length !== 1 ? 'es' : ''} · ${neighborNodes.size} neighbor${neighborNodes.size !== 1 ? 's' : ''}`;
+        resultsInfo.className = 'has-results';
+      }
+
+      refreshGraph();
+
+      // If exactly one match, fly to it
+      if (matches.length === 1) {
+        const node = matches[0];
+        // Wait for node objects to be populated
+        setTimeout(() => {
+          if (node.x == null) return;
+          const distance = 100;
+          const distRatio = 1 + distance / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
+          Graph.cameraPosition(
+            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+            node,
+            1000
+          );
+        }, 500);
+      }
+    }
+
+    function refreshGraph() {
+      // Trigger re-render by resetting nodeVal — forces ThreeForceGraph to recompute geometries
+      Graph
+        .nodeColor(Graph.nodeColor())
+        .nodeVal(Graph.nodeVal())
+        .linkWidth(Graph.linkWidth())
+        .linkDirectionalParticles(Graph.linkDirectionalParticles());
+    }
+
+    // Debounce helper
+    function debounce(fn, delay) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    searchInput.addEventListener('input', debounce(e => applySearch(e.target.value), 220));
+
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      applySearch('');
+      searchInput.focus();
+    });
+
+    // Keyboard shortcut: press "/" to focus search box
+    document.addEventListener('keydown', e => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape') {
+        searchInput.blur();
+        searchInput.value = '';
+        applySearch('');
+      }
+    });
+  </script>
+</body>
