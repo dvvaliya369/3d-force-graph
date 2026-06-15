@@ -1,0 +1,156 @@
+<head>
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+
+    /* Context menu overlay */
+    #context-menu {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      min-width: 180px;
+      overflow: hidden;
+    }
+    #context-menu .menu-title {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #aaa;
+      background: #111;
+      border-bottom: 1px solid #333;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    #context-menu .menu-item {
+      padding: 9px 14px;
+      cursor: pointer;
+      color: #eee;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+    #context-menu .menu-item:hover {
+      background: #2a2a4e;
+      color: #fff;
+    }
+    #context-menu .menu-item.danger:hover {
+      background: #5a1a1a;
+      color: #f88;
+    }
+
+    /* Info panel */
+    #info {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 500;
+      background: rgba(0,0,0,0.6);
+      color: #ccc;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+    }
+  </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+  <!--<script src="../../dist/3d-force-graph.js"></script>-->
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+
+  <!-- Context menu -->
+  <div id="context-menu">
+    <div class="menu-title" id="menu-title">Node</div>
+    <div class="menu-item" id="menu-focus">Focus camera here</div>
+    <div class="menu-item" id="menu-pin">Pin node in place</div>
+    <div class="menu-item danger" id="menu-unpin">Unpin node</div>
+  </div>
+
+  <!-- Usage hint -->
+  <div id="info">Right-click a node to open context menu</div>
+
+  <script>
+    const elem = document.getElementById('3d-graph');
+    const contextMenu = document.getElementById('context-menu');
+    const menuTitle = document.getElementById('menu-title');
+
+    let selectedNode = null;
+
+    const Graph = ForceGraph3D()
+      (elem)
+        .jsonUrl('../datasets/miserables.json')
+        .nodeLabel('id')
+        .nodeAutoColorBy('group')
+        .onNodeHover(node => elem.style.cursor = node ? 'pointer' : null)
+        // Left-click: focus the camera on the node
+        .onNodeClick(node => {
+          const distance = 40;
+          const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+          Graph.cameraPosition(
+            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio },
+            node,
+            1000
+          );
+        })
+        // Right-click: open context menu for the node
+        .onNodeRightClick((node, event) => {
+          selectedNode = node;
+          menuTitle.textContent = node.id || 'Node';
+
+          // Show pin/unpin options based on current state
+          document.getElementById('menu-pin').style.display = node.fx !== undefined ? 'none' : 'block';
+          document.getElementById('menu-unpin').style.display = node.fx !== undefined ? 'block' : 'none';
+
+          // Position and show the menu
+          contextMenu.style.left = (event ? event.clientX : 0) + 'px';
+          contextMenu.style.top = (event ? event.clientY : 0) + 'px';
+          contextMenu.style.display = 'block';
+        });
+
+    // Focus camera menu action
+    document.getElementById('menu-focus').addEventListener('click', () => {
+      if (!selectedNode) return;
+      closeMenu();
+      const distance = 40;
+      const distRatio = 1 + distance / Math.hypot(selectedNode.x, selectedNode.y, selectedNode.z);
+      Graph.cameraPosition(
+        { x: selectedNode.x * distRatio, y: selectedNode.y * distRatio, z: selectedNode.z * distRatio },
+        selectedNode,
+        1500
+      );
+    });
+
+    // Pin node menu action (fix node position)
+    document.getElementById('menu-pin').addEventListener('click', () => {
+      if (!selectedNode) return;
+      closeMenu();
+      selectedNode.fx = selectedNode.x;
+      selectedNode.fy = selectedNode.y;
+      selectedNode.fz = selectedNode.z;
+      Graph.graphData(Graph.graphData()); // refresh
+    });
+
+    // Unpin node menu action
+    document.getElementById('menu-unpin').addEventListener('click', () => {
+      if (!selectedNode) return;
+      closeMenu();
+      delete selectedNode.fx;
+      delete selectedNode.fy;
+      delete selectedNode.fz;
+      Graph.graphData(Graph.graphData()); // refresh
+    });
+
+    function closeMenu() {
+      contextMenu.style.display = 'none';
+      selectedNode = null;
+    }
+
+    // Close menu when clicking elsewhere
+    document.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+  </script>
+</body>
