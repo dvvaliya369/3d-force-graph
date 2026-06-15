@@ -104,6 +104,16 @@ export default Kapsule({
     onNodeHover: { default: () => {}, triggerUpdate: false },
     onLinkClick: { default: () => {}, triggerUpdate: false },
     onLinkHover: { default: () => {}, triggerUpdate: false },
+    // Node search & highlight props
+    nodeSearchTerm: {
+      default: '',
+      triggerUpdate: false,
+      onChange(term, state) {
+        state._applyNodeSearch(term);
+      }
+    },
+    nodeSearchHighlightColor: { default: 'rgb(255, 200, 0)', triggerUpdate: false },
+    onNodeSearchResult: { default: () => {}, triggerUpdate: false },
     ...linkedFGProps,
     ...linkedRenderObjsProps
   },
@@ -131,13 +141,39 @@ export default Kapsule({
     camera: state => state.renderObjs.camera(), // Expose camera
     renderer: state => state.renderObjs.renderer(), // Expose renderer
     tbControls: state => state.renderObjs.tbControls(), // Expose tbControls
+
+    // Smoothly fly the camera to a specific node object or node id
+    focusOnNode: function(state, nodeOrId, transitionMs = 1000) {
+      const nodes = (state.graphData && state.graphData.nodes) || [];
+      const node = (typeof nodeOrId === 'object' && nodeOrId !== null)
+        ? nodeOrId
+        : nodes.find(n => accessorFn(state.nodeId || 'id')(n) === nodeOrId);
+
+      if (!node) return this;
+
+      const camera = state.renderObjs.camera();
+      const distance = 40;
+      const distRatio = 1 + distance / Math.hypot(node.x || 0, node.y || 0, node.z || 0);
+
+      state.renderObjs.cameraPosition(
+        { x: (node.x || 0) * distRatio, y: (node.y || 0) * distRatio, z: (node.z || 0) * distRatio },
+        node,
+        transitionMs
+      );
+
+      return this;
+    },
+
     ...linkedFGMethods,
     ...linkedRenderObjsMethods
   },
 
   stateInit: () => ({
     forceGraph: new ThreeForceGraph(),
-    renderObjs: ThreeRenderObjects()
+    renderObjs: ThreeRenderObjects(),
+    _highlightedNodes: new Set(),
+    _originalNodeColor: null,
+    _applyNodeSearch: () => {}
   }),
 
   init: function(domNode, state) {
@@ -163,6 +199,61 @@ export default Kapsule({
     state.container.appendChild(infoElem = document.createElement('div'));
     infoElem.className = 'graph-info-msg';
     infoElem.textContent = '';
+
+    // Intercept nodeColor changes so we can preserve the user's color accessor
+    // while still layering the search highlight on top.
+    const origNodeColorSetter = state.forceGraph.nodeColor.bind(state.forceGraph);
+    state.forceGraph.nodeColor = function(colorVal) {
+      if (arguments.length === 0) return origNodeColorSetter(); // getter
+      state._userNodeColor = colorVal;
+      // If a search term is active re-apply so the highlight wraps the new base color
+      if (state._highlightedNodes && state._highlightedNodes.size > 0) {
+        state._applyNodeSearch(state.nodeSearchTerm);
+      } else {
+        origNodeColorSetter(colorVal);
+      }
+      return state.forceGraph;
+    };
+
+    // Node search & highlight logic
+    // We store the user-supplied nodeColor accessor and override it to blend highlight colors.
+    state._applyNodeSearch = function(term) {
+      const nodes = (state.graphData && state.graphData.nodes) || [];
+      const labelFn = accessorFn(state.nodeLabel || 'name');
+      const idFn    = accessorFn(state.nodeId    || 'id');
+
+      if (!term || !term.trim()) {
+        // Clear all highlights
+        state._highlightedNodes = new Set();
+        origNodeColorSetter(state._userNodeColor !== undefined ? state._userNodeColor : 'nodeColor');
+        state.onNodeSearchResult([], term);
+        return;
+      }
+
+      const lowerTerm = term.trim().toLowerCase();
+      const matched = nodes.filter(node => {
+        const label = String(labelFn(node) || idFn(node) || '').toLowerCase();
+        return label.includes(lowerTerm);
+      });
+
+      state._highlightedNodes = new Set(matched);
+
+      // Override nodeColor to highlight matched nodes
+      const highlightColor = state.nodeSearchHighlightColor;
+      const baseColorFn = typeof state._userNodeColor === 'function'
+        ? state._userNodeColor
+        : (typeof state._userNodeColor === 'string'
+            ? () => state._userNodeColor
+            : () => null);
+
+      origNodeColorSetter(node =>
+        state._highlightedNodes.has(node)
+          ? highlightColor
+          : (baseColorFn(node) || undefined)
+      );
+
+      state.onNodeSearchResult(matched, term);
+    };
 
     // config forcegraph
     state.forceGraph.onLoading(() => { infoElem.textContent = 'Loading...' });
