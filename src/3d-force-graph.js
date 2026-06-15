@@ -187,7 +187,7 @@ export default Kapsule({
         );
 
         dragControls.addEventListener('dragstart', function (event) {
-          tbControls.enabled = false; // Disable trackball controls while dragging
+          if (tbControls) tbControls.enabled = false; // Disable trackball controls while dragging
 
           const node = event.object.__data;
           node.__initialFixedPos = {fx: node.fx, fy: node.fy, fz: node.fz};
@@ -236,7 +236,7 @@ export default Kapsule({
             .d3AlphaTarget(0)   // release engine low intensity
             .resetCountdown();  // let the engine readjust after releasing fixed nodes
 
-          if (state.enableNavigationControls) {
+          if (state.enableNavigationControls && tbControls) {
             tbControls.enabled = true; // Re-enable trackball controls
           }
 
