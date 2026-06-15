@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Force Graph — Node Search &amp; Highlight</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #000; font-family: Sans-serif; }
+
+    #controls {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 8px 14px;
+    }
+
+    #controls label {
+      color: #ccc;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    #search-input {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      padding: 4px 10px;
+      width: 200px;
+      outline: none;
+    }
+
+    #search-input::placeholder { color: rgba(255,255,255,0.4); }
+
+    #result-count {
+      color: #ffc800;
+      font-size: 12px;
+      min-width: 80px;
+    }
+
+    #focus-btn {
+      background: rgba(255,200,0,0.2);
+      border: 1px solid #ffc800;
+      border-radius: 4px;
+      color: #ffc800;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 4px 10px;
+    }
+
+    #focus-btn:hover { background: rgba(255,200,0,0.35); }
+    #focus-btn:disabled { opacity: 0.3; cursor: default; }
+
+    #3d-graph { width: 100vw; height: 100vh; }
+  </style>
+
+  <script src="//unpkg.com/3d-force-graph"></script>
+  <!--<script src="../../dist/3d-force-graph.js"></script>-->
+</head>
+<body>
+  <div id="controls">
+    <label for="search-input">Search node:</label>
+    <input id="search-input" type="text" placeholder="type a name or id…" />
+    <span id="result-count"></span>
+    <button id="focus-btn" disabled>Focus first</button>
+  </div>
+
+  <div id="3d-graph"></div>
+
+  <script>
+    // --- Build a random tree dataset with string names ---
+    const WORDS = [
+      'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta',
+      'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi',
+      'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'
+    ];
+
+    const N = 80;
+    const gData = {
+      nodes: Array.from({ length: N }, (_, i) => ({
+        id: i,
+        name: `${WORDS[i % WORDS.length]}-${Math.floor(i / WORDS.length)}`
+      })),
+      links: Array.from({ length: N }, (_, id) => id)
+        .filter(id => id > 0)
+        .map(id => ({
+          source: id,
+          target: Math.round(Math.random() * (id - 1))
+        }))
+    };
+
+    // --- Set up the graph ---
+    const Graph = ForceGraph3D()
+      (document.getElementById('3d-graph'))
+        .graphData(gData)
+        .nodeLabel('name')
+        .nodeColor(() => 'rgba(0,180,255,0.75)')
+        .linkColor(() => 'rgba(100,150,255,0.3)')
+        // New props added by this feature:
+        .nodeSearchHighlightColor('rgb(255, 200, 0)')
+        .onNodeSearchResult((matchedNodes, term) => {
+          const countEl = document.getElementById('result-count');
+          const focusBtn = document.getElementById('focus-btn');
+          if (!term) {
+            countEl.textContent = '';
+            focusBtn.disabled = true;
+          } else {
+            countEl.textContent = `${matchedNodes.length} match${matchedNodes.length !== 1 ? 'es' : ''}`;
+            focusBtn.disabled = matchedNodes.length === 0;
+            // Store matches so the focus button can use them
+            focusBtn._matches = matchedNodes;
+          }
+        });
+
+    // --- Wire up the search input ---
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', () => {
+      Graph.nodeSearchTerm(searchInput.value);
+    });
+
+    // --- Wire up the focus button ---
+    document.getElementById('focus-btn').addEventListener('click', () => {
+      const btn = document.getElementById('focus-btn');
+      if (btn._matches && btn._matches.length > 0) {
+        Graph.focusOnNode(btn._matches[0], 1200);
+      }
+    });
+  </script>
+</body>
+</html>

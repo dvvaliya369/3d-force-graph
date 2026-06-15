@@ -142,6 +142,38 @@ myGraph(<myDOMElement>)
 | <b>enableNodeDrag</b>([<i>boolean</i>]) | Getter/setter for whether to enable the user interaction to drag nodes by click-dragging. Only supported on the `d3` force engine. If enabled, every time a node is dragged the simulation is re-heated so the other nodes react to the changes. Only applicable if enablePointerInteraction is `true` and using the `d3` force engine. | `true` |
 | <b>enableNavigationControls</b>([<i>boolean</i>]) | Getter/setter for whether to enable the trackball navigation controls used to move the camera using mouse interactions (rotate/zoom/pan). | `true` |
 
+### Node Search & Highlight
+
+Programmatically search for nodes by label/id and highlight the matches in the graph. Matched nodes are coloured with `nodeSearchHighlightColor` while unmatched nodes keep their original colour. An optional callback fires on every search update, and `focusOnNode` lets you fly the camera to any node.
+
+| Method | Description | Default |
+| --- | --- | :--: |
+| <b>nodeSearchTerm</b>([<i>string</i>]) | Getter/setter for the current search term. Any node whose `nodeLabel` (or `nodeId`) value **contains** this string (case-insensitive) is highlighted. Set to an empty string to clear all highlights. | `''` |
+| <b>nodeSearchHighlightColor</b>([<i>string</i>]) | Getter/setter for the colour applied to nodes that match `nodeSearchTerm`. Accepts any CSS colour string. | `'rgb(255,200,0)'` |
+| <b>onNodeSearchResult</b>(<i>fn</i>) | Callback fired whenever the matched set changes: `onNodeSearchResult(matchedNodes, searchTerm)`. `matchedNodes` is an array of matching node objects. | - |
+| <b>focusOnNode</b>(<i>nodeOrId</i> [, <i>transitionMs</i>]) | Smoothly flies the camera to the given node object or node id. Accepts an optional transition duration in milliseconds (default `1000`). | - |
+
+**Example:**
+
+```js
+const Graph = ForceGraph3D()(myDomElement)
+  .graphData(data)
+  .nodeLabel('name')
+  .nodeSearchHighlightColor('rgb(255, 200, 0)')
+  .onNodeSearchResult((matchedNodes, term) => {
+    console.log(`${matchedNodes.length} nodes matching "${term}"`);
+  });
+
+// Highlight nodes whose name contains "alpha"
+Graph.nodeSearchTerm('alpha');
+
+// Fly the camera to the first matched node
+const firstMatch = Graph.graphData().nodes.find(n => n.name.includes('alpha'));
+Graph.focusOnNode(firstMatch, 1200);
+```
+
+A full interactive example is available at [`example/node-search`](example/node-search/index.html).
+
 ### Input JSON syntax
 ```
 {
